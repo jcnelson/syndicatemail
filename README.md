@@ -1,0 +1,4 @@
+syndicatemail
+=============
+
+Syndicate-powered Webmail
