@@ -60,14 +60,14 @@ public class SMFDirList {
 		inboxLbl.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				dirs[SMFEMailManager.INBOX_ID].reloadDir();
+				dirs[SMFEMailManager.INBOX_ID].reloadDirFromStorage();
 				setActiveDir(SMFEMailManager.INBOX_ID);
 			}
 		});
 		outboxLbl.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				dirs[SMFEMailManager.OUTBOX_ID].reloadDir();
+				dirs[SMFEMailManager.OUTBOX_ID].reloadDirFromStorage();
 				setActiveDir(SMFEMailManager.OUTBOX_ID);
 			}
 		});

@@ -23,12 +23,12 @@ public class SMFListMessagesAsync implements RequestCallback {
 	@Override
 	public void onResponseReceived(Request request, Response response) {
 		SMFEMail[] mailList = null;
-		/*if (response.getStatusCode() != Response.SC_OK) {
+		if (response.getStatusCode() != Response.SC_OK) {
 			Window.alert("Error processing request! ["+response.getStatusCode()+"].");
 			return;
-		}*/
+		}
 		String jsonResp = response.getText();
-				jsonResp = "{\"result\":[";
+		/*		jsonResp = "{\"result\":[";
 		jsonResp += "{\"id\":\"msg_id2\","
 		          +"\"sender_addr\":\"foo@bar.com\","
 		          +"\"receiver_addrs\":[\"nobody@acme.com\", \"mickeymouse@disney.com\"],"
@@ -49,8 +49,8 @@ public class SMFListMessagesAsync implements RequestCallback {
 		          +"\"handle\":\"8011d599ed984edb9115dd71b68402be\","
 		          +"\"is_read\":true,"
 		          +"\"has_attachments\":false}";
-		jsonResp += "]}";
-		Window.alert(jsonResp);
+		jsonResp += "]}";*/
+		//Window.alert(jsonResp);
 		JSONValue jsonVal = null;
 		try {
 			jsonVal = SMFEJsonRpc.decodeRespose(jsonResp);

@@ -3,6 +3,9 @@ package edu.princeton.cs.shared;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 
@@ -18,26 +21,36 @@ public class SMFSendMessageAsync implements RequestCallback{
 	}
 	@Override
 	public void onResponseReceived(Request request, Response response) {
-		/*if (response.getStatusCode() != Response.SC_OK) {
+		if (response.getStatusCode() != Response.SC_OK) {
 			Window.alert("Error processing request! ["+response.getStatusCode()+"].");
 			return;
-		}*/
-		//String jsonStr = response.getText();
-		String jsonStr = "{\"result\": true}";
+		}
+		String jsonStr = response.getText();
+		//Window.alert(jsonStr);
+		JSONValue val = null;
 		try {
-			JSONValue val = SMFEJsonRpc.decodeRespose(jsonStr);
-			if (SMFEJsonRpc.getBooleanValue(val)) {
+			val = SMFEJsonRpc.decodeRespose(jsonStr);
+		} catch (SMFEJsonRpcException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		JSONObject obj = null;
+		JSONBoolean status = null;
+		if (val != null) {
+			if ((obj = val.isObject()) != null) {
+				val = obj.get("status");
+				if ((val != null) && (status = val.isBoolean()) == null)
+					Window.alert("Sending Failed...\nSorry, we don't have a Drafts box yet!");
 				composer.unloadSendDialog();
 			}
-			else {
-				Window.alert("Sending Failed...\nSorry, we don't have a Drafts box yet!");
-				composer.unloadSendDialog();
-			}
-		} 
-		catch (SMFEJsonRpcException e) {
-			Window.alert(e.getMessage());
+			composer.unloadSendDialog();
+		}
+		else {
+			Window.alert("Invalid JSON String.");
+			composer.unloadSendDialog();
 		}
 	}
+
 
 	@Override
 	public void onError(Request request, Throwable exception) {

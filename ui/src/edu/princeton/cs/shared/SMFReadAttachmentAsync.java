@@ -29,7 +29,7 @@ public class SMFReadAttachmentAsync implements RequestCallback{
 				+ "pTSlNKU0pTSlU4vU4FwxtUcdmqRrdTvFLIDeQkmi75V/DM6+6WReNXaLyMWPEsEUi"
 				+ "naKIGTMQFCCVQRONwUQQeY2qmUQR21BmpjP69UpxvM2lknToWYgmVfa\"}}";
 		try {
-			Window.alert(">>>>>> "+jsonStr);
+			//Window.alert(">>>>>> "+jsonStr);
 			jsonStr = SMFEJsonRpc.decodeRespose(jsonStr).toString();
 			attHandler.setData(SMFEJsonRpc.fromBase64(jsonStr).getBytes());
 		} catch (SMFEJsonRpcException e) {

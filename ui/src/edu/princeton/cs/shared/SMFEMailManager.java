@@ -46,7 +46,7 @@ public final class SMFEMailManager {
 		args[1] = msgHandle;
 		//We don't have KW args for this RPC.
 		String jsonStr = SMFEJsonRpc.encodeRPC("read_message", args, null);
-		Window.alert(jsonStr);
+		//Window.alert(jsonStr);
 		storageCon.write(jsonStr, mailDir);
 	}
 	
@@ -62,11 +62,11 @@ public final class SMFEMailManager {
 		String[][] kw = null;
 		if (attachments != null) {
 			kw = new String[1][2];
-			kw[0][0] = "attachments";
+			kw[0][0] = "attachment_names";
 			kw[0][1] = SMFEJsonRpc.toJSONArray(attachments, true);
 		}
 		String jsonStr = SMFEJsonRpc.encodeRPC("send_message", args, kw);
-		Window.alert(jsonStr);
+		//Window.alert(jsonStr);
 		storageCon.write(jsonStr, sendAsync);
 		//Read the response from the server and and alert user...
 	}
@@ -80,22 +80,23 @@ public final class SMFEMailManager {
 		// We don't have KW args for this RPC.
 		String jsonStr = SMFEJsonRpc
 				.encodeRPC("delete_message", args, null);
-		Window.alert(jsonStr);
+		//Window.alert(jsonStr);
 		storageCon.write(jsonStr, delAsync);
 	}
 	
-	public void listMessages(int dirId, long tsStart, int length, 
+	public void listMessages(int dirId, long tsStart, long tsEnd,int length, 
 									SMFListMessagesAsync mailDir) throws RequestException {
 		/*Pack dirID and tsStart to String array (args)*/	
-		String[] args = new String[2];
+		String[] args = new String[3];
 		args[0] = getFolderNameById(dirId);
 		args[1] = ""+tsStart;
+		args[2] = ""+tsEnd;
 		
 		String[][] kw = new String[1][2];
 		kw[0][0] = "length";
 		kw[0][1] =  ""+length;
-		String jsonStr = SMFEJsonRpc.encodeRPC("list_message", args, kw);
-		Window.alert(jsonStr);
+		String jsonStr = SMFEJsonRpc.encodeRPC("list_messages", args, kw);
+		//Window.alert(jsonStr);
 		storageCon.write(jsonStr, mailDir);
 	}
 	
@@ -104,7 +105,7 @@ public final class SMFEMailManager {
 		String[] args = new String[1];
 		args[0] = attachment_name;
 		String jsonStr = SMFEJsonRpc.encodeRPC("read_attachment", null, null);
-		Window.alert(jsonStr);
+		//Window.alert(jsonStr);
 		storageCon.write(jsonStr, attHandler);
 	}
 		
