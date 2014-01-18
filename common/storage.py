@@ -553,11 +553,16 @@ def decrypt_data( sender_pubkey_pem, receiver_privkey_pem, enc_data ):
 # -------------------------------------
 def read_encrypted_file( receiver_privkey_pem, file_path, volume=GET_FROM_SESSION, sender_pubkey_pem=None ):
    global MY_PUBKEY_PEM
+
+   use_my_key = False
    if sender_pubkey_pem is None:
+      use_my_key = True
       sender_pubkey_pem = MY_PUBKEY_PEM
-   
+
    if sender_pubkey_pem is None:
       raise Exception("No storage access key set.")
+
+   print "read (%s) %s, use_my_key = %s" % (str(volume), file_path, use_my_key)
 
    if volume == GET_FROM_SESSION:
       volume = singleton.get_volume()
@@ -587,7 +592,9 @@ def write_encrypted_file( receiver_pubkey_pem, file_path, data, volume=GET_FROM_
 
    if volume == GET_FROM_SESSION:
       volume = singleton.get_volume()
-      
+     
+   print "write (%s) %s" % (str(volume), file_path)
+
    enc_data = encrypt_data( sender_privkey_pem, receiver_pubkey_pem, data )
    if enc_data is None:
       log.error("encrypt_data returned None")

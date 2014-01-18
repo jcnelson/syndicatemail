@@ -274,9 +274,9 @@ def store_public_key( key_name, pubkey, syndicate_user_privkey ):
 
 #-------------------------   
 def load_public_key( key_name, syndicate_user_pubkey ):
-   key_path = make_key_volume_path( key_name + ".pub" )
+   key_path = make_key_local_path( key_name + ".pub" )
    
-   pubkey_json = storage.read_file( key_path )
+   pubkey_json = storage.read_file( key_path, volume=None )
    if pubkey_json is None:
       log.error("Failed to load public key")
       return False
@@ -311,15 +311,6 @@ def secure_hash_compare(s1, s2):
 
 
 if __name__ == "__main__":
-   import session
-   
-   fake_module = collections.namedtuple( "FakeModule", ["VOLUME_STORAGE_DIRS", "LOCAL_STORAGE_DIRS"] )
-   fake_vol = session.do_test_volume( "/tmp/storage-test/volume" )
-   singleton.set_volume( fake_vol )
-   
-   fake_mod = fake_module( LOCAL_STORAGE_DIRS=LOCAL_STORAGE_DIRS, VOLUME_STORAGE_DIRS=VOLUME_STORAGE_DIRS )
-   assert storage.setup_storage( "/apps/syndicatemail/data", "/tmp/storage-test/local", [fake_mod] ), "setup_storage failed"
-   
    pubkey_str = """
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxwhi2mh+f/Uxcx6RuO42
@@ -390,6 +381,16 @@ chit4EZW1ws/JPkQ+Yer91mCQaSkPnIBn2crzce4yqm2dOeHlhsfo25Wr37uJtWY
 X8H/SaEdrJv+LaA61Fy4rJS/56Qg+LSy05lISwIHBu9SmhTuY1lBrr9jMa3Q
 -----END RSA PRIVATE KEY-----
 """.strip()
+
+   import session
+   
+   fake_module = collections.namedtuple( "FakeModule", ["VOLUME_STORAGE_DIRS", "LOCAL_STORAGE_DIRS"] )
+   fake_vol = session.do_test_volume( "/tmp/storage-test/volume" )
+   singleton.set_volume( fake_vol )
+   
+   fake_mod = fake_module( LOCAL_STORAGE_DIRS=LOCAL_STORAGE_DIRS, VOLUME_STORAGE_DIRS=VOLUME_STORAGE_DIRS )
+   assert storage.setup_storage( privkey_str, "/apps/syndicatemail/data", "/tmp/storage-test/local", [fake_mod] ), "setup_storage failed"
+   
 
    print "----- secure hash compare -----"
    
