@@ -20,12 +20,12 @@ public class SMFReadMessageAsync implements RequestCallback  {
 	
 	@Override
 	public void onResponseReceived(Request request, Response response) {
-		/*if (response.getStatusCode() != Response.SC_OK) {
+		if (response.getStatusCode() != Response.SC_OK) {
 			Window.alert("Error processing request! ["+response.getStatusCode()+"].");
 			return;
-		}*/
-		//String jsonStr = response.getText();
-		String jsonStr = "{\"result\":{\"id\":\"msg_id2\","
+		}
+		String jsonStr = response.getText();
+		/*String jsonStr = "{\"result\":{\"id\":\"msg_id2\","
 		          +"\"sender_addr\":\"foo@bar.com\","
 		          +"\"receiver_addrs\":[\"nobody@acme.com\", \"mickeymouse@disney.com\"],"
 		          +"\"cc_addrs\":[\"tux@bar.com\"],"
@@ -34,9 +34,9 @@ public class SMFReadMessageAsync implements RequestCallback  {
 		          +"\"body\":\"This is the body\","
 		          +"\"timestamp\":1388897434,"
 		          +"\"handle\":\"8011d599ed984edb9115dd71b68402be\","
-		          +"\"attachment_names\":[\"79e54e60bcf2142a4d7c3131e2ebeef774be7dceb643f83ae2d16ee31e3e3dee\"]}}";
+		          +"\"attachment_names\":[\"79e54e60bcf2142a4d7c3131e2ebeef774be7dceb643f83ae2d16ee31e3e3dee\"]}}";*/
 		try {
-			Window.alert(">>>>>> "+jsonStr);
+			//Window.alert(">>>>>> "+jsonStr);
 			jsonStr = SMFEJsonRpc.decodeRespose(jsonStr).toString();
 			SMFEMail mail = new SMFEMail(jsonStr);
 			dir.loadMailDisplayCallback(mail);

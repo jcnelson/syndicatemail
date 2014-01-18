@@ -37,7 +37,7 @@ public class SMFMailDir {
 			SMFEMailManager mm = SMFEMailManager.getMailManager();
 			try {
 				SMFListMessagesAsync mailDirAsync = new SMFListMessagesAsync(mailDir);
-				mm.listMessages(type, -1, 20, mailDirAsync);
+				mm.listMessages(type, 0, 0, 20, mailDirAsync);
 			}
 			catch (RequestException e) {
 				Window.alert("Error occured when loading mail directory "+e.getMessage());

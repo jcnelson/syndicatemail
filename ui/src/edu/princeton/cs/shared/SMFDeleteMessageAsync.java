@@ -19,12 +19,12 @@ public class SMFDeleteMessageAsync implements RequestCallback {
 	
 	@Override
 	public void onResponseReceived(Request request, Response response) {
-		/*if (response.getStatusCode() != Response.SC_OK) {
+		if (response.getStatusCode() != Response.SC_OK) {
 			Window.alert("Error processing request! ["+response.getStatusCode()+"].");
 			return;
-		}*/
-		//String jsonStr = response.getText();
-		String jsonStr = "{\"result\": true}";
+		}
+		String jsonStr = response.getText();
+		//String jsonStr = "{\"result\": true}";
 		try {
 			JSONValue val = SMFEJsonRpc.decodeRespose(jsonStr);
 			if (SMFEJsonRpc.getBooleanValue(val)) {

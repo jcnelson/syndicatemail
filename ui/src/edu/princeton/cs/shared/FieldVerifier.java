@@ -1,5 +1,6 @@
 package edu.princeton.cs.shared;
 
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import com.google.gwt.regexp.shared.MatchResult;
@@ -39,7 +40,7 @@ public class FieldVerifier {
 	 * @return true if valid, false if invalid
 	 */
 	public static String[] getEmailAddrs(String emailAddre) {		
-		RegExp regExp = RegExp.compile("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}\\b", "g");
+		/*RegExp regExp = RegExp.compile("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}\\b", "g");
 		MatchResult matcher = null;
 		Vector<String> addrVec = new Vector<String>();
 		while ((matcher = regExp.exec(emailAddre)) != null) {
@@ -48,6 +49,9 @@ public class FieldVerifier {
 		    	regExp.setLastIndex(regExp.getLastIndex());
 		    }
 		}
-		return addrVec.toArray(new String[0]);
+				return addrVec.toArray(new String[0]);*/
+		String[] str = new String[1];
+		str[0] = emailAddre;
+		return str;
 	}
 }

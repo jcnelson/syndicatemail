@@ -209,12 +209,16 @@ public class SMFDMailComposer {
 		sendBtn.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				String[] bccList = null;
+				String[] ccList = null;
 				if (FieldVerifier.getEmailAddrs(toTxt.getText()) == null)
 					return;
 				SMFEMailManager mm = SMFEMailManager.getMailManager();
 				String[] rcptAddrs = FieldVerifier.getEmailAddrs(toTxt.getText());
-				String[] bccList = FieldVerifier.getEmailAddrs(bccTxt.getText());
-				String[] ccList = FieldVerifier.getEmailAddrs(ccTxt.getText());
+				if (!bccTxt.getText().equals(defaultBcc)) 
+					bccList = FieldVerifier.getEmailAddrs(bccTxt.getText());
+				if (!ccTxt.getText().equals(defaultCc)) 
+					ccList = FieldVerifier.getEmailAddrs(ccTxt.getText());
 				String msgBody = emailBody.getText();
 				String subject = sbjTxt.getText();
 				String[][] attachments = null;

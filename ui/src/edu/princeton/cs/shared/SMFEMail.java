@@ -66,7 +66,7 @@ public class SMFEMail {
 	public SMFEMail(String jsonStr) throws SMFEMailException{
 		if (jsonStr == null)
 			throw new SMFEMailException("Invalid JSON String.");
-		Window.alert(">>>>> "+jsonStr);
+		//Window.alert(">>>>> "+jsonStr);
 		
 		JSONArray rcptArray = null, ccArray = null, bccArray = null, attachArray = null;
 		JSONString json_sender = null, json_handle = null, json_subject = null, json_body = null, 

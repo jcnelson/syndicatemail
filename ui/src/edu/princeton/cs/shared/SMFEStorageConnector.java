@@ -15,7 +15,7 @@ import com.google.gwt.user.client.Window;
  */
 public class SMFEStorageConnector {
 	
-	private final String backend_url = "http://127.0.0.1/cgi-bin/test.sh";
+	private final String backend_url = "http://localhost:33333/api";
 	private String url;
 	private static SMFEStorageConnector conn = null;
 	private RequestBuilder builder = null;
@@ -23,6 +23,7 @@ public class SMFEStorageConnector {
 	protected  SMFEStorageConnector() {
 		url = URL.encode(backend_url);
 	    builder = new RequestBuilder(RequestBuilder.POST, url);
+	    builder.setHeader("Content-Type", "application/json");
 	}
 	
 	public void write(String jsonStr, RequestCallback callback) throws RequestException {

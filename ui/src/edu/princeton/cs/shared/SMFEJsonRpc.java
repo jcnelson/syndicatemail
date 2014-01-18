@@ -155,7 +155,7 @@ public class SMFEJsonRpc {
 	
 	public static String encode(String[] args) {
 		if (args == null)
-			return null;
+			return "[]";
 		//Encode args to a single json string.
 		String jsonStr = "[";
 		int len = args.length;
