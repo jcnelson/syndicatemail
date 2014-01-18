@@ -22,6 +22,8 @@ from syndicate.volume import Volume
 
 import singleton
 
+from Crypto.PublicKey import RSA as CryptoKey
+   
 import os 
 import errno
 import collections
@@ -46,6 +48,9 @@ GET_FROM_SESSION=True
 VOLUME_STORAGE_DIRS = [
    "/config"
 ]
+
+MY_PUBKEY_PEM = None
+MY_PRIVKEY_PEM = None
 
 # -------------------------------------
 def path_join( a, *b ):
@@ -345,9 +350,28 @@ def setup_local_storage( local_dir, modules ):
       return rc
 
    return True
-   
+  
+
 # -------------------------------------
-def setup_storage( volume_root_dir, local_dir, modules, volume=GET_FROM_SESSION ):
+def setup_storage_access( my_pkey_pem ):
+   global MY_PUBKEY_PEM, MY_PRIVKEY_PEM
+
+   try:
+      pkey = CryptoKey.importKey( my_pkey_pem )
+      MY_PUBKEY_PEM = pkey.publickey().exportKey()
+      MY_PRIVKEY_PEM = pkey.exportKey()
+   except Exception, e:
+      log.exception(e)
+      log.error("Failed to parse private key")
+      return False
+
+   return True
+      
+
+# -------------------------------------
+def setup_storage( my_pkey_pem, volume_root_dir, local_dir, modules, volume=GET_FROM_SESSION ):
+   global MY_PUBKEY_PEM, MY_PRIVKEY_PEM
+
    if volume == GET_FROM_SESSION:
       volume = singleton.get_volume()
       
@@ -361,6 +385,11 @@ def setup_storage( volume_root_dir, local_dir, modules, volume=GET_FROM_SESSION 
       log.error("Failed to set up volume storage")
       return False
       
+   rc = setup_storage_access( my_pkey_pem )
+   if not rc:
+      log.error("Failed to set up storage access")
+      return False 
+
    return True
 
 
@@ -504,8 +533,8 @@ def write_file( file_path, data, volume=GET_FROM_SESSION, create_mode=0600 ):
       
    
 # -------------------------------------
-def encrypt_data( pubkey_pem, data ):
-   rc, enc_data = c_syndicate.encrypt_data( pubkey_pem, data )
+def encrypt_data( sender_privkey_pem, receiver_pubkey_pem, data ):
+   rc, enc_data = c_syndicate.encrypt_data( sender_privkey_pem, receiver_pubkey_pem, data )
    if rc != 0:
       log.error("encrypt_data rc = %s" % rc)
       return None
@@ -513,8 +542,8 @@ def encrypt_data( pubkey_pem, data ):
    return enc_data
    
 # -------------------------------------
-def decrypt_data( privkey_pem, enc_data ):
-   rc, data = c_syndicate.decrypt_data( privkey_pem, enc_data )
+def decrypt_data( sender_pubkey_pem, receiver_privkey_pem, enc_data ):
+   rc, data = c_syndicate.decrypt_data( sender_pubkey_pem, receiver_privkey_pem, enc_data )
    if rc != 0:
       log.error("decrypt_data rc = %s" % rc)
       return None
@@ -522,7 +551,14 @@ def decrypt_data( privkey_pem, enc_data ):
    return data
       
 # -------------------------------------
-def read_encrypted_file( privkey_pem, file_path, volume=GET_FROM_SESSION ):
+def read_encrypted_file( receiver_privkey_pem, file_path, volume=GET_FROM_SESSION, sender_pubkey_pem=None ):
+   global MY_PUBKEY_PEM
+   if sender_pubkey_pem is None:
+      sender_pubkey_pem = MY_PUBKEY_PEM
+   
+   if sender_pubkey_pem is None:
+      raise Exception("No storage access key set.")
+
    if volume == GET_FROM_SESSION:
       volume = singleton.get_volume()
       
@@ -538,14 +574,21 @@ def read_encrypted_file( privkey_pem, file_path, volume=GET_FROM_SESSION ):
       log.exception(e)
       return None
    
-   return decrypt_data( privkey_pem, enc_data )
+   return decrypt_data( sender_pubkey_pem, receiver_privkey_pem, enc_data )
 
 # -------------------------------------
-def write_encrypted_file( pubkey_pem, file_path, data, volume=GET_FROM_SESSION ):
+def write_encrypted_file( receiver_pubkey_pem, file_path, data, volume=GET_FROM_SESSION, sender_privkey_pem=None ):
+   global MY_PRIVKEY_PEM
+   if sender_privkey_pem is None:
+      sender_privkey_pem = MY_PRIVKEY_PEM
+
+   if sender_privkey_pem is None:
+      raise Exception("No storage access key set.")
+
    if volume == GET_FROM_SESSION:
       volume = singleton.get_volume()
       
-   enc_data = encrypt_data( pubkey_pem, data )
+   enc_data = encrypt_data( sender_privkey_pem, receiver_pubkey_pem, data )
    if enc_data is None:
       log.error("encrypt_data returned None")
       return False
@@ -664,7 +707,7 @@ def purge_cache( cache_name ):
    return True
 
 # -------------------------------------
-def cache_data( pubkey_str, cache_name, data ):
+def cache_data( receiver_pubkey_pem, cache_name, data, sender_privkey_pem=None ):
    global CACHE_DIR
    
    if "/" in cache_name:
@@ -676,15 +719,15 @@ def cache_data( pubkey_str, cache_name, data ):
       log.error("Failed to serialize data for caching")
       return False 
    
-   return write_encrypted_file( pubkey_str, cache_path( cache_name ), data_serialized, volume=None )
+   return write_encrypted_file( receiver_pubkey_pem, cache_path( cache_name ), data_serialized, volume=None, sender_privkey_pem=sender_privkey_pem )
    
 
 # -------------------------------------
-def get_cached_data( privkey_str, cache_name ):
+def get_cached_data( receiver_privkey_pem, cache_name, sender_pubkey_pem=None ):
    
    cp = cache_path( cache_name )
    if path_exists( cp, volume=None ):
-      data_serialized = read_encrypted_file( privkey_str, cp, volume=None )
+      data_serialized = read_encrypted_file( receiver_privkey_pem, cp, volume=None, sender_pubkey_pem=None )
       if data_serialized != None:
          # cache hit
          try:
@@ -703,39 +746,7 @@ def get_cached_data( privkey_str, cache_name ):
 
 # -------------------------------------
 if __name__ == "__main__":
-   
-   fake_module = collections.namedtuple( "FakeModule", ["VOLUME_STORAGE_DIRS", "LOCAL_STORAGE_DIRS"] )
-   fake_vol = singleton.do_test_volume( "/tmp/storage-test/volume" )
-   singleton.set_volume( fake_vol )
-   
-   print "------- setup --------"
-   fake_mod = fake_module( LOCAL_STORAGE_DIRS=['/testroot-local'], VOLUME_STORAGE_DIRS=['/testroot-volume'] )
-   assert setup_storage( "/apps/syndicatemail/data", "/tmp/storage-test/local", [fake_mod] ), "setup_storage failed"
-   
-   foo_class = collections.namedtuple("Foo", ["bar", "baz"])
-   goo_class = collections.namedtuple("Xyzzy", ["foo", "baz"])
-   
-   foo = foo_class( bar="a", baz="b" )
-   goo = goo_class( foo="c", baz="d" )
-   
-   print "------- serialization --------"
-   print "foo == %s" % str(foo)
-   print "goo == %s" % str(goo)
-   
-   foo_json = tuple_to_json( foo )
-   print "foo_json == %s" % foo_json
-   
-   goo_json = tuple_to_json( goo )
-   print "goo_json == %s" % goo_json
-   
-   foo2 = json_to_tuple( foo_class, foo_json )
-   goo2 = json_to_tuple( goo_class, goo_json )
-   
-   print "foo2 == %s" % str(foo2)
-   print "goo2 == %s" % str(goo2)
-   
-   print "------ file I/O -------"
-   
+
    pubkey_str = """
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxwhi2mh+f/Uxcx6RuO42
@@ -807,6 +818,39 @@ X8H/SaEdrJv+LaA61Fy4rJS/56Qg+LSy05lISwIHBu9SmhTuY1lBrr9jMa3Q
 -----END RSA PRIVATE KEY-----
 """.strip()
 
+   import session 
+
+   fake_module = collections.namedtuple( "FakeModule", ["VOLUME_STORAGE_DIRS", "LOCAL_STORAGE_DIRS"] )
+   fake_vol = session.do_test_volume( "/tmp/storage-test/volume" )
+   singleton.set_volume( fake_vol )
+   
+   print "------- setup --------"
+   fake_mod = fake_module( LOCAL_STORAGE_DIRS=['/testroot-local'], VOLUME_STORAGE_DIRS=['/testroot-volume'] )
+   assert setup_storage( privkey_str, "/apps/syndicatemail/data", "/tmp/storage-test/local", [fake_mod] ), "setup_storage failed"
+   
+   foo_class = collections.namedtuple("Foo", ["bar", "baz"])
+   goo_class = collections.namedtuple("Xyzzy", ["foo", "baz"])
+   
+   foo = foo_class( bar="a", baz="b" )
+   goo = goo_class( foo="c", baz="d" )
+   
+   print "------- serialization --------"
+   print "foo == %s" % str(foo)
+   print "goo == %s" % str(goo)
+   
+   foo_json = tuple_to_json( foo )
+   print "foo_json == %s" % foo_json
+   
+   goo_json = tuple_to_json( goo )
+   print "goo_json == %s" % goo_json
+   
+   foo2 = json_to_tuple( foo_class, foo_json )
+   goo2 = json_to_tuple( goo_class, goo_json )
+   
+   print "foo2 == %s" % str(foo2)
+   print "goo2 == %s" % str(goo2)
+   
+   print "------ file I/O -------"
    
    data = "abcde"
    path = volume_path( "/test" )

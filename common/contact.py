@@ -282,28 +282,6 @@ def list_contacts( pubkey_str, privkey_str, start_idx=None, length=None ):
    
       
 if __name__ == "__main__":
-   import session 
-   
-   fake_module = collections.namedtuple( "FakeModule", ["VOLUME_STORAGE_DIRS", "LOCAL_STORAGE_DIRS"] )
-   fake_vol = session.do_test_volume( "/tmp/storage-test/volume" )
-   singleton.set_volume( fake_vol )
-   
-   fake_mod = fake_module( LOCAL_STORAGE_DIRS=LOCAL_STORAGE_DIRS, VOLUME_STORAGE_DIRS=VOLUME_STORAGE_DIRS )
-   assert storage.setup_storage( "/apps/syndicatemail/data", "/tmp/storage-test/local", [fake_mod] ), "setup_storage failed"
-   
-   
-   test_email_addrs = [
-      "jude.mailvolume.syndicate.com@email.princeton.edu",
-      "wathsala.mailvolume.foo.syndicate.com@bar.com",
-      "muneeb.volume.localhost@localhost"
-   ]
-   
-   print "-------- parse_addr -----------"
-   for addr in test_email_addrs:
-      print addr
-      print "%s" % str(parse_addr( addr ))
-     
-   print "-------- contact DB -----------"
    
    pubkey_str = """
 -----BEGIN PUBLIC KEY-----
@@ -375,6 +353,30 @@ chit4EZW1ws/JPkQ+Yer91mCQaSkPnIBn2crzce4yqm2dOeHlhsfo25Wr37uJtWY
 X8H/SaEdrJv+LaA61Fy4rJS/56Qg+LSy05lISwIHBu9SmhTuY1lBrr9jMa3Q
 -----END RSA PRIVATE KEY-----
 """.strip()
+
+   import session 
+   
+   fake_module = collections.namedtuple( "FakeModule", ["VOLUME_STORAGE_DIRS", "LOCAL_STORAGE_DIRS"] )
+   fake_vol = session.do_test_volume( "/tmp/storage-test/volume" )
+   singleton.set_volume( fake_vol )
+   
+   fake_mod = fake_module( LOCAL_STORAGE_DIRS=LOCAL_STORAGE_DIRS, VOLUME_STORAGE_DIRS=VOLUME_STORAGE_DIRS )
+   assert storage.setup_storage( privkey_str, "/apps/syndicatemail/data", "/tmp/storage-test/local", [fake_mod] ), "setup_storage failed"
+   
+   
+   test_email_addrs = [
+      "jude.mailvolume.syndicate.com@email.princeton.edu",
+      "wathsala.mailvolume.foo.syndicate.com@bar.com",
+      "muneeb.volume.localhost@localhost"
+   ]
+   
+   print "-------- parse_addr -----------"
+   for addr in test_email_addrs:
+      print addr
+      print "%s" % str(parse_addr( addr ))
+     
+   print "-------- contact DB -----------"
+   
    
    contact_jude = SyndicateContact( addr="jude.mailvolume.syndicate.com@example.com", pubkey_pem = pubkey_str, extras = {"Phone number": "5203318323"} )
    contact_wathsala = SyndicateContact( addr="wathsala.mailvolume.foo.syndicate.com@princeton.edu", pubkey_pem = pubkey_str, extras = {"City": "Princeton"} )
