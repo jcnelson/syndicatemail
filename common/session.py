@@ -137,7 +137,7 @@ def do_login( config, email, password, syndicate_oid_username, syndicate_oid_pas
    volume = Volume( gateway_name=gateway_name,
                     gateway_port=gateway_port,
                     ms_url=parsed_email.MS,
-                    my_key_pem=gateway_privkey_pem,
+                    my_key_str=gateway_privkey_pem,
                     volume_key_pem=volume_pubkey_pem,   # FIXME: volume_pubkey_pem consistent naming
                     volume_name=parsed_email.volume,
                     oid_username=syndicate_oid_username,

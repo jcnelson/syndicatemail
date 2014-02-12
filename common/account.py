@@ -592,7 +592,7 @@ def create_account( syndicatemail_uid, syndicatemail_password, mail_server, pass
                               oid_username=syndicate_user_id,
                               oid_password=syndicate_user_password,
                               ms_url=ms_url,
-                              my_key_pem=existing_gateway_pkey_pem,
+                              my_key_str=existing_gateway_pkey_pem,
                               volume_name=existing_volume_name,
                               storage_root=storage.local_path( GATEWAY_RUNTIME_STORAGE ) )
    
