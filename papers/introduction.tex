@@ -1,0 +1,77 @@
+\section{Introduction}
+
+Over the past decades, email has gained wide-spread adoption 
+and is now a core communication service for society. However, 
+some of its original design choices have had a profound impact 
+on email information security and storage, making it a fundamentally
+insecure communication channel. In this paper, we revisit some 
+of these choices and propose a backwards-compatible email service, 
+called STEAK, that addresses this limitation in the context of 
+webmail-like usability expectations.
+
+Users send a wide variety of information in their email messages, 
+including financial documents, healthcare records, legal documents, etc.
+Neither traditional email protocols, like SMTP and IMAP, nor contemporary
+webmail, provide adequate security guarantees.
+In a secure communication channel, when Alice sends 
+Bob a message, only Bob can read it (message confidentiality), Bob can 
+verify that the message he received was in fact sent by Alice (message 
+authenticity), and that it contains the data she sent (message integrity). 
+Email and webmail provide none of these properties out of the box. 
+
+At the same time, users have come to expect certain features on top of 
+traditional email.  These include automatic spam filtering, the ability 
+to search and organize messages, and ubiquitous access to their email 
+through webmail from a variety of user devices. We believe that providing 
+stronger security guarantees cannot come at an expense of reduced usability. 
+Our goal is to design an email service that provides these properties 
+(called CIA guarantees in the rest of the paper), while providing the 
+features and user experience of webmail.  This is a nontrivial problem 
+and current security approaches require running out-of-band security 
+systems ``on top'' of email usually by leveraging public-key cryptography. 
+These include S/MIME and PGP, as well as more recent ID-based encryption 
+schemes~\cite{id-based-cryptography}.
+
+The problem with out-of-band security approaches is that they require
+ active involvement in key management. 
+Users must generate, distribute, and revoke public keys with the out-of-band 
+system, and carefully guard their private keys while remaining vigilant 
+for compromises. We believe this is unreasonable because most users do 
+not understand practical information security~\cite{garfinkel-email-survey}, 
+and want the convenience 
+of webmail despite the security problems it introduces. Even if they 
+understood the security concerns, using public-key cryptography in this 
+manner greatly increases the complexity of basic email tasks. 
+
+Our key insight is that email's store-and-forward approach makes CIA 
+guarantees hard to achieve. Because each email server stores and processes 
+messages, a user must either trust the server completely to not to break 
+CIA, or perform end-to-end authenticated encryption outside of the system. 
+The former is unrealistic, but the latter requires users to set up and 
+manage keys out-of-band. To address these challenges in this paper we 
+present a new email system called Security Transparent Email with 
+Automatically-managed Keys (STEAK). 
+
+The contributions of STEAK are 1) an automatic key management system 
+(called AutoKey) and 2) an email exchange protocol (called Secure Message 
+Request Protocol, or SMRP) that allow users to access their email using a 
+web browser on any device. STEAK enables access to email with only a 
+username/password pair and a small amount of additional logic at the 
+email client. To do so, STEAK leverages the user's own personal cloud 
+storage to host sealed account state, sealed keys, and sealed messages. 
+The user devices (clients), not servers, process messages after decrypting 
+them.  The AutoKey system distributes public keys using more non-colluding 
+key repositories than an adversary can compromise.  Once keys are distributed, users
+fetch mail with SMRP by downloading them from the sender's cloud storage. All the while, 
+STEAK remains transparently backwards-compatible with SMTP, and offers 
+more limited CIA guarantees to non-STEAK users that are still stronger than SMTP.
+
+The remainder of this paper is organized as follows.  In section~\ref{sec:motivation}, 
+we define our usability requirements, and argue that our strategy is necessary 
+to meet them for providing CIA guarantees. Then, we present the design of STEAK 
+in section~\ref{sec:design}, with a focus on AutoKey and SMRP, and describe how basic 
+email activities are performed.  Afterward, we present our 
+implementation strategies and prototype (section~\ref{sec:implementation}), and give 
+a qualitative usability 
+analysis and a preliminary performance evaluation (section~\ref{sec:evaluation}).  
+We finish with related work (Section~\ref{sec:related-work}) and a conclusion (section~\ref{sec:conclusion}).

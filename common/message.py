@@ -34,6 +34,7 @@ import os
 import pickle
 import base64
 import time
+import math
 
 from Crypto.Hash import SHA256 as HashAlg
 from Crypto.Hash import HMAC
@@ -528,7 +529,7 @@ def send_message( pubkey_str, privkey_str, sender_addr, receiver_addrs, cc_addrs
          log.debug("Send to %s via normal email" % missing_addr.addr )
          
       else:
-         missing_contact = SyndicateContact( addr=missing_addr.addr, pubkey_pem=pubkey_pem, extras={} )
+         missing_contact = contact.SyndicateContact( addr=missing_addr.addr, pubkey_pem=pubkey_pem, extras={} )
          new_contacts.append( missing_contact )
          log.debug("Saved new contact: %s" % missing_addr.addr )
          
@@ -879,6 +880,24 @@ def list_messages( vol_inst, pubkey_str, privkey_str, folder_name, start_timesta
    storage.cache_data( pubkey_str, folder_cache_name( folder_name ), ret )
    return ret
 
+
+
+def stddev( data ):
+   x_avg = 0.0
+   for x in data:
+      x_avg += x
+
+   x_avg /= len(data)
+
+   val = 0.0
+   for x in data:
+      val += (x - x_avg) * (x - x_avg)
+
+   val /= len(data)
+
+   val = math.sqrt( val )
+   
+   return val
          
          
 if __name__ == "__main__":
@@ -1119,6 +1138,9 @@ zTnZ0cqW+ZP7aVhUx6fjxAriawcLvV4utLZmMDLDxjS12T98PbxfIsKa8UJ82w==
    
    print "---- send message setup ----"
    
+   def test_download_user_pubkey( addr ):
+      return pubkey_str2
+   
    def test_post_message( privkey_pem, encrypted_incoming_message, use_http=False ):
       """
       rc = network.post_message( privkey_pem, encrypted_incoming_message )
@@ -1141,6 +1163,7 @@ zTnZ0cqW+ZP7aVhUx6fjxAriawcLvV4utLZmMDLDxjS12T98PbxfIsKa8UJ82w==
       return True
       
    network.post_message = test_post_message
+   network.download_user_pubkey = test_download_user_pubkey
    
    print "---- send message ----"
    
@@ -1148,8 +1171,28 @@ zTnZ0cqW+ZP7aVhUx6fjxAriawcLvV4utLZmMDLDxjS12T98PbxfIsKa8UJ82w==
    msg_id3 = "4ae26634ccaf401fbd4114a252ffa2a5"
    msg_ts3 = 1389238627
    
-   rc, failed = send_message( pubkey_str, privkey_str, alice.addr, [bob.addr], [], [], "Hello Bob", "This is a test of SyndicateMail", attachments={"poop": "poopie"}, fake_time=msg_ts3, fake_id=msg_id3, use_http=True )
-   assert rc, "send message failed for %s" % failed
+   subject = "a" * 128
+   body = "b" * 26000
+   num_tests = 10
+   times = [None] * num_tests
+   for i in xrange(0,num_tests):
+      start = time.time()
+      
+      rc, failed = send_message( pubkey_str, privkey_str, alice.addr, [bob.addr], [], [], subject, body, attachments={"poop": "poopie"}, fake_time=msg_ts3, fake_id=msg_id3, use_http=True )
+      
+      end = time.time()
+      
+      assert rc, "send message failed for %s" % failed
+      
+      times[i] = end - start
+   
+   times.sort()
+   avg = sum(times) / float(num_tests)
+   median = times[num_tests/2]
+   
+   print ""
+   print "send message avg: %s, median: %s, stddev: %s" % (avg, median, stddev(times))
+   print ""
    
    # bob from alice
    print "---- receive message setup ----"
@@ -1159,5 +1202,22 @@ zTnZ0cqW+ZP7aVhUx6fjxAriawcLvV4utLZmMDLDxjS12T98PbxfIsKa8UJ82w==
    
    print "---- receive message ----"
   
-   rc = read_message( fake_vol2, pubkey_str2, privkey_str2, None, INBOX_FOLDER, msg_ts3, msg_id3, sender_vol_inst=fake_vol )
-   assert rc, "read message failed"
+   times = [None] * num_tests
+   for i in xrange(0,num_tests):
+      start = time.time()
+   
+      rc = read_message( fake_vol2, pubkey_str2, privkey_str2, None, INBOX_FOLDER, msg_ts3, msg_id3, sender_vol_inst=fake_vol )
+      
+      end = time.time()
+      
+      assert rc, "read message failed"
+      
+      times[i] = end - start
+   
+   times.sort()
+   avg = sum(times) / float(num_tests)
+   median = times[num_tests/2]
+   
+   print ""
+   print "receive message avg: %s, median: %s, stddev: %s" % (avg, median, stddev(times))
+   print ""

@@ -1,0 +1,17 @@
+\noindent{\bf Abstract.}  Email is a core communication mechanism for society.  
+Current email protocols, like SMTP and IMAP, do not provide fundamental security 
+properties like \emph{confidentiality}, \emph{integrity}, and \emph{authenticity}.  Users can optionally 
+employ public-key cryptography like PGP on top of email, but the steps for doing 
+so are too complicated for the average user. This paper presents Security-Transparent 
+Email with Automatically-managed Keys (STEAK), a backwards-compatible email system 
+that offers stronger security guarantees than SMTP while retaining most of the usability 
+benefits of webmail.  Our main contribution is a key management protocol that 
+performs key generation, distribution, and revocation securely and automatically. 
+Like webmail, users can seamlessly access email from various devices.
+
+For message exchange, unlike conventional email, STEAK uses a pull-based approach where senders 
+host messages for receivers to download.  We exploit this to implement an ``unsend'' 
+feature, as well as economically disincentivize spam. Our prototype implementation 
+and a qualitative usability evaluation show that STEAK requires less workflow changes than
+using PGP with email. Our preliminary performance evaluation 
+shows that the system is responsive enough for typical use.
